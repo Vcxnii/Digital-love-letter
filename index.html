@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Love Letter Website Maker</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&family=Great+Vibes&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+/* Keep every piece of text visible, no matter how long the word or sentence is. */
+input,textarea{max-width:100%;overflow-wrap:anywhere;word-break:break-word}
+h1,h2,h3,p,.hero,.final,.letter-text,.note,.item,.item h3,.item p{min-width:0;overflow-wrap:anywhere;word-break:break-word}
+body{font-family:"DM Sans",sans-serif;background:linear-gradient(135deg,#fff8fb,#eef9ff);color:#594d55;min-height:100vh}
+#editor{max-width:850px;margin:auto;padding:25px 15px 50px}
+h1,.section-title{font-family:"Great Vibes",cursive;font-weight:400;color:#b66f89}
+.editor-head{text-align:center;margin-bottom:25px}
+.editor-head h1{font-size:clamp(3rem,10vw,5rem)}
+.editor-head p,.label-note{font-family:"Caveat",cursive;color:#8b7881;font-size:1.25rem}
+.card{background:rgba(255,255,255,.9);border:1px solid #efd5df;border-radius:24px;padding:23px;margin-bottom:18px;box-shadow:0 15px 40px rgba(130,90,110,.09)}
+.card h2{font-family:"Caveat",cursive;color:#ae7189;font-size:1.8rem;margin-bottom:16px}
+.field{margin-bottom:15px}.field:last-child{margin-bottom:0}
+label{display:block;font-weight:600;color:#765f69;margin-bottom:6px}
+input,textarea{width:100%;border:1px solid #e1bdcb;background:#fffafa;border-radius:13px;padding:11px 13px;color:#594d55;font-size:15px;outline:none}
+textarea{min-height:130px;resize:vertical;line-height:1.6}
+input:focus,textarea:focus{border-color:#c88da3;box-shadow:0 0 0 3px #c88da320}
+.upload-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.upload{border:2px dashed #dfb1c3;background:#fffafd;border-radius:18px;min-height:145px;display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;overflow:hidden;padding:10px}
+.upload input{display:none}.upload span{font-family:"Caveat",cursive;color:#a87d8c;font-size:1.2rem}
+.upload img{width:100%;height:180px;object-fit:cover;border-radius:12px;display:none}
+.buttons{position:sticky;bottom:12px;z-index:10;display:flex;flex-wrap:wrap;gap:9px;justify-content:center;background:#fffafceb;backdrop-filter:blur(10px);padding:11px;border-radius:20px;box-shadow:0 8px 30px #6e4b5b20}
+button{border:0;border-radius:30px;padding:12px 19px;cursor:pointer;font-weight:600}
+.addStory{background:#f5dbe4;color:#9d6b7e;margin-top:5px}.removeStory{background:#f7e7ec;color:#a06d81;padding:8px 13px;font-size:13px}
+.previewBtn{background:#e7a7bc;color:white}.exportBtn{background:#bd7891;color:white}.resetBtn{background:#f3e1e7;color:#8f6878}
+.status{text-align:center;margin-top:12px;color:#8c7180;font-size:.9rem}
+#preview{display:none}#preview.show{display:block}#editor.hidden{display:none}
+.back{position:fixed;top:14px;left:14px;z-index:100;background:#fff;color:#a06d81;box-shadow:0 5px 20px #64465520}
+.site{min-height:100vh;overflow:hidden;background:radial-gradient(circle at top left,#ffe7ef,transparent 35%),radial-gradient(circle at bottom right,#dff4ff,transparent 35%),linear-gradient(135deg,#fff8fb,#eef9ff)}
+#opening{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;justify-content:center;align-items:center;background:linear-gradient(135deg,#fff9fb,#eaf8ff);transition:1s}
+#opening.hide{opacity:0;visibility:hidden;pointer-events:none}.opening-title{font:400 clamp(2.4rem,8vw,4.8rem) "Great Vibes",cursive;color:#bd7891;text-align:center;padding:20px;margin-bottom:35px;width:max-content;max-width:92vw;overflow-wrap:anywhere;word-break:break-word;line-height:1.15}
+.envelope-area{width:310px;height:215px;display:flex;align-items:center;justify-content:center;cursor:pointer}.envelope{position:relative;width:280px;height:180px}
+.envelope-back{position:absolute;inset:0;background:#f5cbd8;border-radius:8px;box-shadow:0 18px 35px #96647830}
+.envelope-paper{position:absolute;width:235px;height:145px;left:22.5px;bottom:18px;background:#fffdfb;border-radius:5px;z-index:2;opacity:0;transform:translateY(15px);transition:.8s}
+.envelope-flap{position:absolute;left:0;top:0;width:0;height:0;border-left:140px solid transparent;border-right:140px solid transparent;border-top:105px solid #efb8cb;transform-origin:top center;z-index:5;transition:1s}
+.envelope-front{position:absolute;inset:0;background:#f3c2d2;clip-path:polygon(0 0,50% 58%,100% 0,100% 100%,0 100%);z-index:6;border-radius:8px}
+.ribbon{position:absolute;width:35px;height:180px;left:122.5px;top:0;background:#fff6f9aa;z-index:8;transition:.5s}
+.ribbon:before,.ribbon:after{content:"";position:absolute;width:55px;height:28px;border:4px solid #fff6f9cc;border-radius:50%;top:72px}
+.ribbon:before{right:17px;transform:rotate(25deg)}.ribbon:after{left:17px;transform:rotate(-25deg)}
+.envelope.open .envelope-flap{transform:rotateX(180deg);z-index:1}.envelope.open .envelope-paper{opacity:1;transform:translateY(-58px);transition-delay:.95s}.envelope.open .ribbon{opacity:0;transition-delay:.45s}
+.main{opacity:0;visibility:hidden;transition:opacity 1.2s}.main.show{opacity:1;visibility:visible}
+section{max-width:950px;margin:auto;padding:90px 22px;text-align:center}.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center}.hero h1,.final h2{font:400 clamp(3rem,10vw,6rem) "Great Vibes",cursive;color:#b66f89}.hero p,.final p{font:clamp(1.3rem,4vw,2rem) "Caveat",cursive;color:#8b7881;margin-top:10px}
+.heart,.final-heart{position:relative;background:#ef9fb9;transform:none;border-radius:0;clip-path:polygon(50% 100%,8% 55%,3% 38%,5% 23%,14% 10%,27% 5%,39% 9%,50% 20%,61% 9%,73% 5%,86% 10%,95% 23%,97% 38%,92% 55%)}.heart{width:58px;height:52px;margin:45px auto 15px}.heart:before,.heart:after,.final-heart:before,.final-heart:after{display:none}.final-heart{width:66px;height:60px;margin-top:55px}
+.section-title{font-size:clamp(2.6rem,8vw,4.2rem);margin-bottom:28px}.letter-card{background:#ffffffd1;border:1px solid #e6becb8c;border-radius:25px;padding:clamp(25px,6vw,55px);box-shadow:0 20px 50px #825a6e1f;text-align:left}.letter-text{font:clamp(1.25rem,3vw,1.65rem)/1.8 "Caveat",cursive;color:#5f535a;white-space:pre-wrap;min-height:200px}.cursor{display:inline-block;width:2px;height:1.2em;background:#bd7891;vertical-align:-.15em;animation:blink .7s infinite}@keyframes blink{50%{opacity:0}}.signature{font:2rem "Great Vibes",cursive;color:#b66f89;text-align:right;margin-top:25px;opacity:0;transition:1s}.signature.visible{opacity:1}
+.transition{font:1.35rem "Caveat",cursive;color:#a97889;margin-bottom:45px}
+.bouquet-image{width:min(90%,420px);max-height:400px;object-fit:contain;border-radius:20px;display:block;margin:auto;box-shadow:0 15px 35px #825a6e1f;cursor:pointer}.placeholder{width:min(90%,420px);min-height:280px;margin:auto;border:2px dashed #e2afc2;border-radius:25px;display:flex;align-items:center;justify-content:center;font:1.4rem "Caveat",cursive;color:#b07b8d}.hint{font:1.3rem "Caveat",cursive;color:#a97889;margin-top:15px}
+.popup{position:fixed;inset:0;background:#46323c59;backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;z-index:80;transition:.35s;padding:20px}.popup.active{opacity:1;visibility:visible}.popup-box{background:#fffafa;padding:35px;border-radius:25px;max-width:390px;text-align:center;box-shadow:0 25px 60px #462d3c33}.popup-box p{font:1.65rem/1.5 "Caveat",cursive}.close{margin-top:22px;background:#e8a9bd;color:white}
+.photos{max-width:700px;margin:auto;display:grid;grid-template-columns:repeat(6,1fr);gap:18px}.photos img,.empty-photo{width:100%;aspect-ratio:1;border-radius:18px;object-fit:cover}.photos img:nth-child(1),.empty-photo:nth-child(1){grid-column:1/3}.photos img:nth-child(2),.empty-photo:nth-child(2){grid-column:3/5}.photos img:nth-child(3),.empty-photo:nth-child(3){grid-column:5/7}.photos img:nth-child(4),.empty-photo:nth-child(4){grid-column:2/4}.photos img:nth-child(5),.empty-photo:nth-child(5){grid-column:4/6}
+.timeline{position:relative;max-width:700px;margin:auto}.timeline:before{content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;background:#e6bdcc;transform:translateX(-50%)}.item{width:50%;padding:20px;position:relative}.item:nth-child(odd){padding-right:45px;text-align:right}.item:nth-child(even){margin-left:50%;padding-left:45px;text-align:left}.dot{position:absolute;width:14px;height:14px;border-radius:50%;background:#e8a8bd;top:28px}.item:nth-child(odd) .dot{right:-7px}.item:nth-child(even) .dot{left:-7px}.item h3{font:1.7rem "Caveat",cursive;color:#ae7189;margin-bottom:6px}.item p{color:#796c73;line-height:1.6}
+.secret-button{background:#e7a7bc;color:white}.secret{margin-top:25px;opacity:0;transform:translateY(15px);transition:.7s}.secret.show{opacity:1;transform:none}.note{max-width:700px;margin:30px auto 0;padding:28px;background:#ffffffb3;border-radius:22px;font:clamp(1.25rem,3.5vw,1.6rem)/1.7 "Caveat",cursive}.note-sign{display:block;margin-top:18px;font:2rem "Great Vibes",cursive;color:#b66f89}.final{min-height:80vh;display:flex;flex-direction:column;justify-content:center;align-items:center}.final-heart{width:55px;height:55px;margin-top:55px;border-radius:7px}.final-heart:before,.final-heart:after{width:55px;height:55px}.final-heart:before{top:-27px}.final-heart:after{left:27px}
+.petal{position:fixed;top:-20px;width:9px;height:13px;background:#f2bfd0;border-radius:80% 20% 80% 20%;opacity:.6;pointer-events:none;animation:fall linear infinite;z-index:2}@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+@media(max-width:600px){.upload-grid{grid-template-columns:1fr}.photos{gap:10px}.timeline:before{left:12px}.item,.item:nth-child(odd),.item:nth-child(even){width:100%;margin-left:0;padding-left:40px;padding-right:10px;text-align:left}.item:nth-child(odd) .dot,.item:nth-child(even) .dot{left:5px;right:auto}}
+</style>
+</head>
+
+<body>
+
+<div id="editor">
+<div class="editor-head">
+<h1>Love Letter Maker</h1>
+<p>Everything is empty so you can make it yours ♡</p>
+</div>
+
+<div class="card">
+<h2>♡ Names & opening</h2>
+<div class="field"><label>Recipient's name</label><input id="recipient" placeholder="Enter their name"></div>
+<div class="field"><label>Your name</label><input id="sender" placeholder="Enter your name"></div>
+<div class="field"><label>Opening title</label><input id="openingText" placeholder="Example: I have a letter for you!"></div>
+<div class="field"><label>Main title</label><input id="heroTitle" placeholder="Example: Letter for..."></div>
+<div class="field"><label>Subtitle</label><input id="heroSubtitle" placeholder="Write a little message"></div>
+</div>
+
+<div class="card">
+<h2>♡ Your letter</h2>
+<div class="field"><label>Letter</label><textarea id="letter" placeholder="Write your whole letter here..."></textarea></div>
+</div>
+
+<div class="card">
+<h2>♡ Bouquet</h2>
+<label class="upload">
+<input type="file" id="bouquetInput" accept="image/*">
+<span id="bouquetLabel">🌸 Click to choose your bouquet</span>
+<img id="bouquetThumb">
+</label>
+</div>
+
+<div class="card">
+<h2>♡ Five pictures</h2>
+<div class="field"><label>Pictures title</label><input id="pictureTitle" placeholder=""></div>
+<div class="upload-grid">
+<label class="upload"><input class="photoInput" type="file" accept="image/*"><span>📷 Picture 1</span><img></label>
+<label class="upload"><input class="photoInput" type="file" accept="image/*"><span>📷 Picture 2</span><img></label>
+<label class="upload"><input class="photoInput" type="file" accept="image/*"><span>📷 Picture 3</span><img></label>
+<label class="upload"><input class="photoInput" type="file" accept="image/*"><span>📷 Picture 4</span><img></label>
+<label class="upload"><input class="photoInput" type="file" accept="image/*"><span>📷 Picture 5</span><img></label>
+</div>
+</div>
+
+<div class="card">
+<h2>♡ Our little story</h2>
+<div id="storyEditor"></div>
+<button type="button" class="addStory" onclick="addStory()">＋ Add another story</button>
+<p class="label-note" style="margin-top:10px">You can add as many story moments as you want. ♡</p>
+</div>
+
+<div class="card">
+<h2>♡ Hidden message</h2>
+<div class="field"><label>Secret message</label><textarea id="secret" placeholder="Write your hidden message here..."></textarea></div>
+</div>
+
+<div class="card">
+<h2>♡ Ending</h2>
+<div class="field"><label>Final title</label><input id="finalTitle" placeholder="Example: I love you always"></div>
+<div class="field"><label>Final subtitle</label><input id="finalSubtitle" placeholder="Example: No matter what, it's still you. ♡"></div>
+</div>
+
+<div class="buttons">
+<button class="previewBtn" onclick="previewSite()">👀 Preview</button>
+<button class="exportBtn" onclick="exportSite()">💾 Export Final</button>
+<button class="resetBtn" onclick="location.reload()">↻ Reset</button>
+</div>
+<div class="status" id="status"></div>
+</div>
+
+
+<div id="preview">
+<button class="back" onclick="back()">← Back to Editor</button>
+<div class="site">
+
+<div id="opening">
+<div class="opening-title" id="pOpening"></div>
+<div class="envelope-area" id="envArea">
+<div class="envelope" id="env">
+<div class="envelope-back"></div><div class="envelope-paper"></div><div class="envelope-flap"></div><div class="envelope-front"></div><div class="ribbon"></div>
+</div>
+</div>
+</div>
+
+<main class="main" id="main">
+
+<section class="hero">
+<h1 id="pHero"></h1><p id="pSub"></p><div class="heart"></div>
+</section>
+
+<section>
+<h2 class="section-title">A little letter for you</h2>
+<div class="letter-card">
+<div class="letter-text"><span id="typed"></span><span class="cursor" id="cursor"></span></div>
+<div class="signature" id="sig"></div>
+</div>
+</section>
+
+<section>
+<div class="transition">↓ now time for your flowers</div>
+<h2 class="section-title">A bouquet for you</h2>
+<div id="pBouquet"></div>
+<div class="hint">Click the bouquet for a little something ♡</div>
+</section>
+
+<section>
+<h2 class="section-title" id="pPictureTitle"></h2>
+<p style="font:1.5rem 'Caveat',cursive;color:#8d7881;margin:-18px 0 30px"></p>
+<div class="photos" id="pPhotos"></div>
+</section>
+
+<section>
+<h2 class="section-title">Our little story</h2>
+<div class="timeline" id="pTimeline"></div>
+</section>
+
+<section>
+<h2 class="section-title">I hid something...</h2>
+<button class="secret-button" id="secretBtn">Open the secret</button>
+<div class="secret" id="secretBox"><div class="note"><span id="pSecret"></span><span class="note-sign" id="pSign"></span></div></div>
+</section>
+
+<section class="final">
+<h2 id="pFinal"></h2><p id="pFinalSub"></p><div class="final-heart"></div>
+</section>
+
+</main>
+
+<div class="popup" id="popup"><div class="popup-box"><p>Even if I could give you every flower in the world, I'd still choose to give you this one. ♡</p><button class="close" onclick="closePopup()">Close</button></div></div>
+
+</div>
+</div>
+
+<script>
+let bouquetData="";
+let photos=["","","","",""];
+
+function readImage(input,callback){
+const file=input.files[0]; if(!file)return;
+const r=new FileReader(); r.onload=e=>callback(e.target.result); r.readAsDataURL(file);
+}
+
+document.getElementById("bouquetInput").addEventListener("change",function(){
+readImage(this,data=>{
+bouquetData=data;
+document.getElementById("bouquetThumb").src=data;
+document.getElementById("bouquetThumb").style.display="block";
+document.getElementById("bouquetLabel").style.display="none";
+});
+});
+
+document.querySelectorAll(".photoInput").forEach((input,i)=>{
+input.addEventListener("change",function(){
+readImage(this,data=>{
+photos[i]=data;
+const img=this.parentElement.querySelector("img");
+img.src=data; img.style.display="block";
+this.parentElement.querySelector("span").style.display="none";
+});
+});
+});
+
+function val(id){return document.getElementById(id).value}
+
+function getData(){
+return{
+recipient:val("recipient"),sender:val("sender"),opening:val("openingText"),
+hero:val("heroTitle"),sub:val("heroSubtitle"),letter:val("letter"),
+pictureTitle:val("pictureTitle"),bouquet:bouquetData,photos:[...photos],
+stories:Array.from(document.querySelectorAll(".storyEditorItem")).map(item=>[
+item.querySelector(".storyTitle").value,
+item.querySelector(".storyText").value
+]),
+secret:val("secret"),final:val("finalTitle"),finalSub:val("finalSubtitle")
+};
+}
+
+
+let storyCount=0;
+
+function addStory(title="",text=""){
+storyCount++;
+const wrap=document.createElement("div");
+wrap.className="storyEditorItem";
+wrap.style.cssText="border:1px solid #efd5df;border-radius:18px;padding:15px;margin-bottom:14px;background:#fffafd";
+wrap.innerHTML=`
+<div class="field"><label>Story ${storyCount} title</label>
+<input class="storyTitle" placeholder="Example: The beginning" value="${escapeAttr(title)}"></div>
+<div class="field"><label>Story ${storyCount} text</label>
+<textarea class="storyText" placeholder="Write what happened...">${escapeHTML(text)}</textarea></div>
+<button type="button" class="removeStory" onclick="this.parentElement.remove(); renumberStories()">Remove this story</button>`;
+document.getElementById("storyEditor").appendChild(wrap);
+}
+
+function renumberStories(){
+document.querySelectorAll(".storyEditorItem").forEach((item,i)=>{
+item.querySelectorAll("label")[0].textContent="Story "+(i+1)+" title";
+item.querySelectorAll("label")[1].textContent="Story "+(i+1)+" text";
+});
+storyCount=document.querySelectorAll(".storyEditorItem").length;
+}
+
+function escapeAttr(s){
+return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function applyData(d){
+document.getElementById("pOpening").textContent=d.opening;
+document.getElementById("pHero").textContent=d.hero;
+document.getElementById("pSub").textContent=d.sub;
+document.getElementById("pPictureTitle").textContent=d.pictureTitle;
+document.getElementById("sig").textContent="- "+d.sender;
+document.getElementById("pSign").textContent="- "+d.sender;
+document.getElementById("pSecret").textContent=d.secret;
+document.getElementById("pFinal").textContent=d.final;
+document.getElementById("pFinalSub").textContent=d.finalSub;
+
+const b=document.getElementById("pBouquet");
+b.innerHTML=d.bouquet?`<img class="bouquet-image" id="bouquetImage" src="${d.bouquet}">`:`<div class="placeholder">No bouquet yet ♡</div>`;
+if(d.bouquet)document.getElementById("bouquetImage").onclick=()=>document.getElementById("popup").classList.add("active");
+
+const pg=document.getElementById("pPhotos");
+pg.innerHTML="";
+d.photos.forEach(p=>{
+const img=document.createElement(p?"img":"div");
+if(p)img.src=p;else img.className="empty-photo";
+pg.appendChild(img);
+});
+
+const tl=document.getElementById("pTimeline");
+tl.innerHTML="";
+d.stories.forEach((s,i)=>{
+tl.innerHTML+=`<div class="item"><div class="dot"></div><h3>${escapeHTML(s[0])}</h3><p>${escapeHTML(s[1])}</p></div>`;
+});
+}
+
+function escapeHTML(s){
+return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+for(let i=0;i<4;i++) addStory();
+
+function previewSite(){
+const d=getData();
+applyData(d);
+document.getElementById("editor").classList.add("hidden");
+document.getElementById("preview").classList.add("show");
+document.body.style.overflow="hidden";
+
+const opening=document.getElementById("opening");
+const main=document.getElementById("main");
+const env=document.getElementById("env");
+opening.classList.remove("hide");main.classList.remove("show");env.classList.remove("open");
+document.getElementById("typed").textContent="";
+document.getElementById("sig").classList.remove("visible");
+
+document.getElementById("envArea").onclick=()=>{
+env.classList.add("open");
+setTimeout(()=>{
+opening.classList.add("hide");main.classList.add("show");document.body.style.overflow="auto";
+setTimeout(()=>typeLetter(d.letter),900);
+},1900);
+};
+
+document.getElementById("secretBtn").onclick=()=>{
+const box=document.getElementById("secretBox");
+box.classList.toggle("show");
+document.getElementById("secretBtn").textContent=box.classList.contains("show")?"♡":"Open the secret";
+};
+
+createPetals();
+}
+
+function typeLetter(text){
+let i=0;const out=document.getElementById("typed"),cur=document.getElementById("cursor");
+out.textContent="";cur.style.display="inline-block";
+function next(){
+if(i>=text.length){cur.style.display="none";document.getElementById("sig").classList.add("visible");return}
+const c=text[i++];out.appendChild(document.createTextNode(c));
+let speed=c===" "?12:",".includes(c)?75:".!?".includes(c)?170:30;
+setTimeout(next,speed);
+}next();
+}
+
+function createPetals(){
+document.querySelectorAll(".site .petal").forEach(x=>x.remove());
+for(let i=0;i<14;i++)makePetal();
+}
+function makePetal(){
+const p=document.createElement("div");p.className="petal";p.style.left=Math.random()*100+"vw";p.style.animationDuration=6+Math.random()*7+"s";p.style.animationDelay=Math.random()*5+"s";document.querySelector(".site").appendChild(p);setTimeout(()=>p.remove(),15000);
+}
+function closePopup(){document.getElementById("popup").classList.remove("active")}
+function back(){document.getElementById("preview").classList.remove("show");document.getElementById("editor").classList.remove("hidden");document.body.style.overflow="auto"}
+
+function exportSite(){
+const d=getData();
+const data=JSON.stringify(d).replace(/</g,"\\u003c");
+const css=document.querySelector("style").textContent;
+const final=`<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>${escapeHTML(d.recipient||"Love Letter")} ♡</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&family=Great+Vibes&display=swap" rel="stylesheet">
+<style>${css}</style></head>
+<body>
+<div class="site">
+<div id="opening"><div class="opening-title">${escapeHTML(d.opening)}</div><div class="envelope-area" id="envArea"><div class="envelope" id="env"><div class="envelope-back"></div><div class="envelope-paper"></div><div class="envelope-flap"></div><div class="envelope-front"></div><div class="ribbon"></div></div></div></div>
+<main class="main" id="main">
+<section class="hero"><h1>${escapeHTML(d.hero)}</h1><p>${escapeHTML(d.sub)}</p><div class="heart"></div></section>
+<section><h2 class="section-title">A little letter for you</h2><div class="letter-card"><div class="letter-text"><span id="typed"></span><span class="cursor" id="cursor"></span></div><div class="signature" id="sig">- ${escapeHTML(d.sender)}</div></div></section>
+<section><div class="transition">↓ now time for your flowers</div><h2 class="section-title">A bouquet for you</h2><div id="pBouquet">${d.bouquet?`<img class="bouquet-image" id="bouquetImage" src="${d.bouquet}">`:`<div class="placeholder">No bouquet yet ♡</div>`}</div><div class="hint">Click the bouquet for a little something ♡</div></section>
+<section><h2 class="section-title">${escapeHTML(d.pictureTitle)}</h2><p style="font:1.5rem 'Caveat',cursive;color:#8d7881;margin:-18px 0 30px"></p><div class="photos">${d.photos.map(p=>p?`<img src="${p}">`:`<div class="empty-photo"></div>`).join("")}</div></section>
+<section><h2 class="section-title">Our little story</h2><div class="timeline">${d.stories.map(s=>`<div class="item"><div class="dot"></div><h3>${escapeHTML(s[0])}</h3><p>${escapeHTML(s[1])}</p></div>`).join("")}</div></section>
+<section><h2 class="section-title">I hid something...</h2><button class="secret-button" id="secretBtn">Open the secret</button><div class="secret" id="secretBox"><div class="note">${escapeHTML(d.secret)}<span class="note-sign">- ${escapeHTML(d.sender)}</span></div></div></section>
+<section class="final"><h2>${escapeHTML(d.final)}</h2><p>${escapeHTML(d.finalSub)}</p><div class="final-heart"></div></section>
+</main>
+<div class="popup" id="popup"><div class="popup-box"><p>Even if I could give you every flower in the world, I'd still choose to give you this one. ♡</p><button class="close" onclick="closePopup()">Close</button></div></div>
+</div>
+<script>
+const letter=${JSON.stringify(d.letter)};
+const env=document.getElementById("env"),opening=document.getElementById("opening"),main=document.getElementById("main"),out=document.getElementById("typed"),cur=document.getElementById("cursor"),sig=document.getElementById("sig");
+document.getElementById("envArea").onclick=()=>{env.classList.add("open");setTimeout(()=>{opening.classList.add("hide");main.classList.add("show");document.body.style.overflow="auto";typeIt()},1900)};
+function typeIt(){let i=0;function n(){if(i>=letter.length){cur.style.display="none";sig.classList.add("visible");return}let c=letter[i++];out.appendChild(document.createTextNode(c));setTimeout(n,c===" "?12:",".includes(c)?75:".!?".includes(c)?170:30)}n()}
+function closePopup(){document.getElementById("popup").classList.remove("active")}
+const bouquet=document.getElementById("bouquetImage");if(bouquet)bouquet.onclick=()=>document.getElementById("popup").classList.add("active");
+document.getElementById("secretBtn").onclick=()=>{let b=document.getElementById("secretBox");b.classList.toggle("show");document.getElementById("secretBtn").textContent=b.classList.contains("show")?"♡":"Open the secret"};
+function petal(){let p=document.createElement("div");p.className="petal";p.style.left=Math.random()*100+"vw";p.style.animationDuration=6+Math.random()*7+"s";p.style.animationDelay=Math.random()*5+"s";document.querySelector(".site").appendChild(p);setTimeout(()=>p.remove(),15000)}
+for(let i=0;i<14;i++)petal();setInterval(petal,1200);
+<\/script></body></html>`;
+const blob=new Blob([final],{type:"text/html"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="my-love-letter-final.html";a.click();URL.revokeObjectURL(a.href);
+document.getElementById("status").textContent="♡ Final website exported! You can upload that HTML file to your hosting site.";
+}
+</script>
+</body>
+</html>
